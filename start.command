@@ -8,4 +8,4 @@ else
 fi
 clear
 
-python3 <(curl -s https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/dns_list.py)
+python3 <(curl -s https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/cf.py)
