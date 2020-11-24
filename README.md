@@ -16,3 +16,6 @@ nameonly  return domain name only
 ddns      update record as ddns
 IDonly    show record ID (first record)
 ```
+
+## Remarks
+For your convenience, you can store the Zone ID and token into config.py according to config_sample.py
