@@ -14,7 +14,7 @@ cf.py (-m method) (--zone ZoneID) (--token Token) (-s Subdomain (for DDNS update
 dnsrec    list json response from CF  
 nameonly  return domain name only
 ddns      update record as ddns
-IDonly    show record ID (first record)
+id    show record ID (first record)
 ```
 
 ## Remarks
