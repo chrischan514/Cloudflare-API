@@ -15,3 +15,4 @@ dnsrec    list json response from CF
 nameonly  return domain name only
 ddns      update record as ddns
 IDonly    show record ID (first record)
+```
