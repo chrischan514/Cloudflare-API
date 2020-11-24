@@ -1,3 +1,2 @@
 zone = ""
 token = ""
-domain = ""
