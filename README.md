@@ -12,14 +12,14 @@ If no existing record is found, a new record will be created
 python3 cf.py [-h] [-m METH] [--zone ZONE] [--token TOKEN] [-s SUBDOMAIN] [--type TYPE] [-v] [--without-proxy]
 
 optional arguments:
-  -h, --help       show help message and exit
-  -m METH          specifying the method you wanna use. e.g. ddns update, check id only, etc.
-  --zone ZONE      input zone id
-  --token TOKEN    input token
-  -s SUBDOMAIN     input subdomain
-  --type TYPE      type of record (A/AAAA)
-  -v               verbose mode
-  --without-proxy  disable CF\'s proxy while creating record
+  -h, --help           show help message and exit
+  -m METH              specifying the method you wanna use. e.g. ddns update, check id only, etc.
+  --zone ZONE          input zone id
+  --token TOKEN        input token
+  -s SUBDOMAIN         input subdomain
+  --type TYPE          type of record (A/AAAA)
+  -v                   verbose mode
+  --without-proxy      disable CF\'s proxy while creating record
   --provider PROVIDER  try choosing another provider set if it fails
 ```
 
