@@ -56,13 +56,13 @@ def fetchDomainName():
 
 def dnsDetail():
     fetchDomainName()
-    if args.subdomain is None:
+    if args.subdomain == "":
         subdomain = input('Subdomain which you wanna check (Blank if all): ')
     else:
         subdomain = args.subdomain
     if subdomain != "":
-        subdomain = subdomain + "." + domain
-    namequerydata = {"name": subdomain}
+        subdomain1 = subdomain + "." + domain
+    namequerydata = {"name": subdomain1}
     if type != "":
         namequerydata['type'] = type
     try:
@@ -82,7 +82,6 @@ def ddns():
     import json
     fetchDomainName()
     global type
-    global subdomain
     if type == "A":
         site = "http://ipv4.ident.me"
     elif type == "AAAA":
@@ -92,11 +91,11 @@ def ddns():
         type = "A"
     else:
         raise ValueError
-    if args.subdomain is None:
-        subdomain = input("Subdomain you wanna update: ")
+    if subdomain =="":
+        subdomain1 = input("Subdomain you wanna update: ")
     else:
-        subdomain = args.subdomain
-    subdomain = subdomain + "." + domain
+        subdomain1 = args.subdomain
+    subdomain1 = subdomain + "." + domain
     http = requests.get(site)
     ip = http.text
     updateparam = {"type": type, "name": subdomain, "content": ip, "ttl": 1}
@@ -130,11 +129,12 @@ def checkExist():
 
 def fetchID():
     fetchDomainName()
-    global subdomain
-    subdomain = subdomain + "." + domain
-    namequerydata = {"name": subdomain}
+    subdomain1 = subdomain + "." + domain
+    namequerydata = {"name": subdomain1}
     if type != "":
         namequerydata['type'] = type
+    else:
+        namequerydata['type'] = "A"
     try:
         http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", headers=option, params=namequerydata) #calling CloudFlare API
     except:
@@ -145,6 +145,9 @@ def fetchID():
 def IDonly():
     print(fetchID())
 
-methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
+def debug():
+    print(checkExist())
+
+methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly, "debug": debug}
 start = methods[args.meth]
 start()
