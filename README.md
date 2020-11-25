@@ -37,6 +37,16 @@ id        show record ID (first record)
 | 1   | ident.me (No HTTPS supported, not recommended) |
 | 2   | ipify.org (default)                            |
 | 3   | my-ip.io                                       |
+
 ## Remarks
 For your convenience, you can store the Zone ID and token into config.py according to config_sample.py  
 DO NOT ADD your domain name in the subdomain field
+
+# Example
+Cron Job in FreeNAS Jail
+```bash
+iocage exec jail "python3 cf.py --zone ZONEID --token TOKEN -m ddns -s nas --type AAAA"
+```
+
+# New Functions Suggestions/ Errors Reporting
+Raise an issue are welcomed
