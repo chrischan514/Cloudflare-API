@@ -8,19 +8,27 @@ I'm using macOS, dunno about Windows.
 No record ID input is needed, the ID will be automatically fetched for you.  
 If no existing record is found, a new record will be created
 # Usage
+```bash
+python3 cf.py -h
 ```
-python3 cf.py [-h] [-m METH] [--zone ZONE] [--token TOKEN] [-s SUBDOMAIN] [--type TYPE] [-v] [--without-proxy]
+```
+usage: cf.py [-h] [-m {dnsrec,nameonly,ddns,id}] [--zone Zone ID] [--token Token] [-s Subdomain] [--type Record TYPE] [-v] [--without-proxy] [--provider {1,2,3,4,5,6}]
+
+Asking CloudFlare's API to help you. For more details, please check https://github.com/chrischan514/Cloudflare-API/blob/main/README.md
 
 optional arguments:
-  -h, --help           show help message and exit
-  -m METH              specifying the method you wanna use. e.g. ddns update, check id only, etc.
-  --zone ZONE          input zone id
-  --token TOKEN        input token
-  -s SUBDOMAIN         input subdomain
-  --type TYPE          type of record (A/AAAA)
-  -v                   verbose mode
-  --without-proxy      disable CF's proxy while creating record
-  --provider PROVIDER  try choosing another provider set if it fails
+  -h, --help            show this help message and exit
+  -m {dnsrec,nameonly,ddns,id}
+                        specifying the method you wanna use. e.g. ddns update, check id only, etc.
+  --zone Zone ID        input zone id
+  --token Token         input token
+  -s Subdomain          input subdomain
+  --type Record TYPE    type of record (A/AAAA)
+  -v, --verbose         verbose mode
+  --without-proxy       disable CF's proxy while creating record
+  --provider {1,2,3,4,5,6}
+                        try choosing another provider set if it fails
+
 ```
 
 ## Methods
@@ -37,6 +45,9 @@ id        show record ID (first record)
 | 1   | ident.me (No HTTPS supported, not recommended) |
 | 2   | ipify.org (default)                            |
 | 3   | my-ip.io                                       |
+| 4   | seeip.org                                      |
+| 5   | whatismyipaddress.com                          |
+| 6   | ip.sb                                          |
 
 ## Remarks
 For your convenience, you can store the Zone ID and token into config.py according to config_sample.py  
