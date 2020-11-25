@@ -3,6 +3,15 @@ Quick Tools using CloudFlare's API
 If you do not need a separate file to contain all your frequently used (token and zone id), instead you will enter each time on your own, you can just download the "start.command" and run.
 # System requirements
 I'm using macOS, dunno about Windows.
+Python is needed.
+## Modules Required
+```
+requests
+```
+To install, type:  
+```bash
+pip3 install requests
+```
 # Features
 ## DDNS
 No record ID input is needed, the ID will be automatically fetched for you.  
