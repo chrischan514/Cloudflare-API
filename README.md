@@ -2,7 +2,7 @@ Quick Tools using CloudFlare's API
 # Immediate Use
 If you do not need a separate file to contain all your frequently used (token and zone id), instead you will enter each time on your own, you can just download the "start.command" and run.
 # System requirements
-I'm using macOS, dunno about Windows.
+I'm using macOS, dunno about Windows.  
 Python is needed.
 ## Modules Required
 ```
@@ -69,4 +69,4 @@ iocage exec jail "python3 cf.py --zone ZONEID --token TOKEN -m ddns -s nas --typ
 ```
 
 # New Functions Suggestions/ Errors Reporting
-Raise an issue are welcomed
+Raising issues are welcomed
