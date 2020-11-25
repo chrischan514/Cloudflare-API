@@ -14,6 +14,7 @@ parser.add_argument("-s", dest="subdomain", action="store", default="", help="in
 parser.add_argument("--type", dest="type", action="store", default="", help="type of record (A/AAAA)")
 parser.add_argument("-v", dest="verbose", action="store_true", help="verbose mode")
 parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", help="disable CF's proxy while creating record")
+parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int)
 args = parser.parse_args()
 
 zone = args.zone
@@ -82,12 +83,14 @@ def ddns():
     import json
     fetchDomainName()
     global type
+    ipv6map = {1: "http://ipv6.ident.me", 2: "https://api6.ipify.org", 3: "https://api6.my-ip.io/ip"}
+    ipv4map = {1: "http://ipv4.ident.me", 2: "https://api.ipify.org", 3: "https://api4.my-ip.io/ip"}
     if type == "A":
-        site = "http://ipv4.ident.me"
+        site = ipv4map[args.provider]
     elif type == "AAAA":
-        site = "http://ipv6.ident.me"
+        site = ipv6map[args.provider]
     elif type=="":
-        site = "http://ipv4.ident.me"
+        site = ipv4map[args.provider]
         type = "A"
     else:
         raise ValueError
@@ -96,8 +99,12 @@ def ddns():
     else:
         subdomain1 = args.subdomain
     subdomain1 = subdomain + "." + domain
-    http = requests.get(site)
-    ip = http.text
+    try:
+        http = requests.get(site)
+    except ConnectionError:
+        print("Error! Probably this connection type is not supported in your network, or the query sites have been blocked!")
+    else:
+        ip = http.text
     updateparam = {"type": type, "name": subdomain, "content": ip, "ttl": 1}
     updateparam = json.dumps(updateparam)
     if checkExist() is True:
