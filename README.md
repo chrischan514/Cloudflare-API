@@ -20,6 +20,7 @@ optional arguments:
   --type TYPE      type of record (A/AAAA)
   -v               verbose mode
   --without-proxy  disable CF\'s proxy while creating record
+  --provider PROVIDER  try choosing another provider set if it fails
 ```
 
 ## Methods
@@ -30,6 +31,12 @@ ddns      update record as ddns
 id        show record ID (first record)
 ```
 
+## Provider Sets
+| Set |                                                |
+| --- | ---------------------------------------------- |
+| 1   | ident.me (No HTTPS supported, not recommended) |
+| 2   | ipify.org (default)                            |
+| 3   | my-ip.io                                       |
 ## Remarks
 For your convenience, you can store the Zone ID and token into config.py according to config_sample.py  
 DO NOT ADD your domain name in the subdomain field
