@@ -17,10 +17,7 @@ parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", 
 parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int)
 args = parser.parse_args()
 
-zone = args.zone
-token = args.token
-type = args.type
-subdomain = args.subdomain
+zone, token, type, subdomain = args.zone, args.token, args.type, args.subdomain
 
 if os.path.isfile(str(pathlib.Path(__file__).parent) + '/config.py'): #import custom config
     from config import *
@@ -31,7 +28,7 @@ except NameError:
     zone = input("Zone ID:")
     pass
 else:
-    if zone is None:
+    if zone=="":
         zone = input("Zone ID:")
 
 try:
@@ -40,7 +37,7 @@ except NameError:
     token = input("Token:")
     pass
 else:
-    if token is None:
+    if token=="":
         token = input("Token:")
 
 option = {"Content-Type": "application/json", "Authorization": "Bearer "+token} #HTTP Headers required in CloudFlare API
@@ -57,12 +54,14 @@ def fetchDomainName():
 
 def dnsDetail():
     fetchDomainName()
-    if args.subdomain == "":
+    if args.subdomain=="":
         subdomain = input('Subdomain which you wanna check (Blank if all): ')
     else:
         subdomain = args.subdomain
     if subdomain != "":
-        subdomain1 = subdomain + "." + domain
+        subdomain1 = ".".join([subdomain, domain])
+    else:
+        subdomain1=""
     namequerydata = {"name": subdomain1}
     if type != "":
         namequerydata['type'] = type
@@ -83,30 +82,27 @@ def ddns():
     import json
     fetchDomainName()
     global type
-    ipv6map = {1: "http://ipv6.ident.me", 2: "https://api6.ipify.org", 3: "https://api6.my-ip.io/ip"}
-    ipv4map = {1: "http://ipv4.ident.me", 2: "https://api.ipify.org", 3: "https://api4.my-ip.io/ip"}
+    ipv6map, ipv4map = {1: "http://ipv6.ident.me", 2: "https://api6.ipify.org", 3: "https://api6.my-ip.io/ip"}, {1: "http://ipv4.ident.me", 2: "https://api.ipify.org", 3: "https://api4.my-ip.io/ip"}
     if type == "A":
         site = ipv4map[args.provider]
     elif type == "AAAA":
         site = ipv6map[args.provider]
     elif type=="":
-        site = ipv4map[args.provider]
-        type = "A"
+        site, type = ipv4map[args.provider], "A"
     else:
         raise ValueError
     if subdomain =="":
         subdomain1 = input("Subdomain you wanna update: ")
     else:
         subdomain1 = args.subdomain
-    subdomain1 = subdomain + "." + domain
+    subdomain1 = ".".join([subdomain, domain])
     try:
         http = requests.get(site)
     except ConnectionError:
         print("Error! Probably this connection type is not supported in your network, or the query sites have been blocked!")
     else:
         ip = http.text
-    updateparam = {"type": type, "name": subdomain, "content": ip, "ttl": 1}
-    updateparam = json.dumps(updateparam)
+    updateparam = json.dumps({"type": type, "name": subdomain, "content": ip, "ttl": 1})
     if checkExist() is True:
         try:
             update = requests.put("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/" + fetchID(), headers=option, data=updateparam) #calling CloudFlare API
@@ -136,7 +132,7 @@ def checkExist():
 
 def fetchID():
     fetchDomainName()
-    subdomain1 = subdomain + "." + domain
+    subdomain1 = ".".join([subdomain, domain])
     namequerydata = {"name": subdomain1}
     if type != "":
         namequerydata['type'] = type
