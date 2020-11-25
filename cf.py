@@ -6,12 +6,14 @@ import os.path
 import pathlib
 import argparse
 
-parser = argparse.ArgumentParser(description="Asking CloudFlare's API to help you.")
-parser.add_argument('-m', dest="meth", action='store', default="dnsrec")
-parser.add_argument("--zone", dest="zone", action="store")
-parser.add_argument("--token", dest="token", action="store")
-parser.add_argument("-s", dest="subdomain", action="store", default="")
-parser.add_argument("--type", dest="type", action="store", default="")
+parser = argparse.ArgumentParser(description="Asking CloudFlare's API to help you. For more details, please check https://github.com/chrischan514/Cloudflare-API/blob/main/README.md")
+parser.add_argument('-m', dest="meth", action='store', default="dnsrec", help="specifying the method you wanna use. e.g. ddns update, check id only, etc.")
+parser.add_argument("--zone", dest="zone", action="store", help="input zone id")
+parser.add_argument("--token", dest="token", action="store", help="input token")
+parser.add_argument("-s", dest="subdomain", action="store", default="", help="input subdomain")
+parser.add_argument("--type", dest="type", action="store", default="", help="type of record (A/AAAA)")
+parser.add_argument("-v", dest="verbose", action="store_true", help="verbose mode")
+parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", help="disable CF's proxy while creating record")
 args = parser.parse_args()
 
 zone = args.zone
@@ -52,13 +54,14 @@ def fetchDomainName():
         domain = domainquery.json()["result"]["name"]
         return domain
 
-def dnsrec():
+def dnsDetail():
     fetchDomainName()
-    subdomain = input('Subdomain which you wanna check (Blank if all): ')
+    if args.subdomain is None:
+        subdomain = input('Subdomain which you wanna check (Blank if all): ')
+    else:
+        subdomain = args.subdomain
     if subdomain != "":
         subdomain = subdomain + "." + domain
-
-
     namequerydata = {"name": subdomain}
     if type != "":
         namequerydata['type'] = type
@@ -67,7 +70,10 @@ def dnsrec():
     except:
         print("Errors occurred!")
     else:
-        print(http.json())
+        return(http.json())
+
+def dnsrec():
+    print(dnsDetail())
 
 def showDomainName():
     print(fetchDomainName())
@@ -75,30 +81,58 @@ def showDomainName():
 def ddns():
     import json
     fetchDomainName()
+    global type
+    global subdomain
     if type == "A":
         site = "http://ipv4.ident.me"
     elif type == "AAAA":
         site = "http://ipv6.ident.me"
+    elif type=="":
+        site = "http://ipv4.ident.me"
+        type = "A"
     else:
         raise ValueError
-    if args.subdomain == "":
+    if args.subdomain is None:
         subdomain = input("Subdomain you wanna update: ")
     else:
         subdomain = args.subdomain
-    subdomain1 = subdomain + "." + domain
+    subdomain = subdomain + "." + domain
     http = requests.get(site)
     ip = http.text
-    updateparam = {"type": type, "name": subdomain1, "content": ip, "ttl": 1}
+    updateparam = {"type": type, "name": subdomain, "content": ip, "ttl": 1}
     updateparam = json.dumps(updateparam)
-    try:
-        update = requests.put("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/" + fetchID(), headers=option, data=updateparam) #calling CloudFlare API
-    except:
-        print("Errors occurred!")
+    if checkExist() is True:
+        try:
+            update = requests.put("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/" + fetchID(), headers=option, data=updateparam) #calling CloudFlare API
+        except:
+            print("Errors occurred!")
+        else:
+            if args.verbose is True:
+                print(update.text)
+    else:
+        if args.proxystatus is not False:
+            updateparam=json.loads(updateparam)
+            updateparam["proxied"] = True
+            updateparam = json.dumps(updateparam)
+        try:
+            update = requests.post("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/", headers=option, data=updateparam) #calling CloudFlare API
+        except:
+            print("Errors occurred!")
+        else:
+            if args.verbose is True:
+                print(update.text)
+
+def checkExist():
+    if dnsDetail()['result_info']['count']==0:
+        return False
+    else:
+        return True
 
 def fetchID():
     fetchDomainName()
-    subdomain1 = subdomain + "." + domain
-    namequerydata = {"name": subdomain1}
+    global subdomain
+    subdomain = subdomain + "." + domain
+    namequerydata = {"name": subdomain}
     if type != "":
         namequerydata['type'] = type
     try:
