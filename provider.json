@@ -1,0 +1,34 @@
+{
+  "set": [
+    {
+      "id": 1,
+      "ipv4": "http://ipv4.ident.me",
+      "ipv6": "http://ipv6.ident.me"
+    },
+    {
+      "id": 2,
+      "ipv4": "https://api.ipify.org",
+      "ipv6": "https://api6.ipify.org"
+    },
+    {
+      "id": 3,
+      "ipv4": "https://api4.my-ip.io/ip",
+      "ipv6": "https://api6.my-ip.io/ip"
+    },
+    {
+      "id": 4,
+      "ipv4": "https://ip4.seeip.org",
+      "ipv6": "https://ip6.seeip.org"
+    },
+    {
+      "id": 5,
+      "ipv4": "https://ipv4bot.whatismyipaddress.com",
+      "ipv6": "https://ipv6bot.whatismyipaddress.com"
+    },
+    {
+      "id": 6,
+      "ipv4": "https://api-ipv4.ip.sb/ip",
+      "ipv6": "https://api-ipv6.ip.sb/ip"
+    }
+  ]
+}
