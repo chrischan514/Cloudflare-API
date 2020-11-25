@@ -8,11 +8,11 @@ I'm using macOS, dunno about Windows.
 No record ID input is needed, the ID will be automatically fetched for you.  
 If no existing record is found, a new record will be created
 # Usage
-```bash
+```
 python3 cf.py [-h] [-m METH] [--zone ZONE] [--token TOKEN] [-s SUBDOMAIN] [--type TYPE] [-v] [--without-proxy]
 
 optional arguments:
-  -h, --help       show this help message and exit
+  -h, --help       show help message and exit
   -m METH          specifying the method you wanna use. e.g. ddns update, check id only, etc.
   --zone ZONE      input zone id
   --token TOKEN    input token
