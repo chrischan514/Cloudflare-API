@@ -19,7 +19,7 @@ optional arguments:
   -s SUBDOMAIN         input subdomain
   --type TYPE          type of record (A/AAAA)
   -v                   verbose mode
-  --without-proxy      disable CF\'s proxy while creating record
+  --without-proxy      disable CF's proxy while creating record
   --provider PROVIDER  try choosing another provider set if it fails
 ```
 
