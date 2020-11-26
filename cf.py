@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+
+
 # custom value should be defined in config.py
 import requests
 import os.path
 import pathlib
 import argparse
-
+zone, token = "", ""
 parser = argparse.ArgumentParser(description="Asking CloudFlare's API to help you. For more details, please check https://github.com/chrischan514/Cloudflare-API/blob/main/README.md")
 parser.add_argument('-m', dest="meth", action='store', default="dnsrec", help="specifying the method you wanna use. e.g. ddns update, check id only, etc.", choices=["dnsrec", "nameonly", "ddns", "id"])
 parser.add_argument("--zone", dest="zone", action="store", help="input zone id", metavar="Zone ID")
@@ -22,23 +24,12 @@ zone, token, type, subdomain = args.zone, args.token, args.type, args.subdomain
 if os.path.isfile(str(pathlib.Path(__file__).parent) + '/config.py'): #import custom config
     from config import *
 
-try: #check is defined
-    zone
-except NameError:
-    zone = input("Zone ID:")
-    pass
-else:
-    if zone=="":
-        zone = input("Zone ID:")
 
-try:
-    token
-except NameError:
+if zone=="":
+    zone = input("Zone ID:")
+
+if token=="":
     token = input("Token:")
-    pass
-else:
-    if token=="":
-        token = input("Token:")
 
 option = {"Content-Type": "application/json", "Authorization": "Bearer "+token} #HTTP Headers required in CloudFlare API
 
