@@ -18,11 +18,10 @@ parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", 
 parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int, choices=range(1,7))
 args = parser.parse_args()
 
-zone, token, type, subdomain = args.zone, args.token, args.type, args.subdomain
-
 if os.path.isfile(str(pathlib.Path(__file__).parent) + '/config.py'): #import custom config
     from config import *
 
+zone, token, type, subdomain = args.zone, args.token, args.type, args.subdomain
 
 if zone=="" or zone is None:
     zone = input("Zone ID: ")
