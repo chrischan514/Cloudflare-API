@@ -9,10 +9,10 @@ import pathlib
 import argparse
 parser = argparse.ArgumentParser(description="Asking CloudFlare's API to help you. For more details, please check https://github.com/chrischan514/Cloudflare-API/blob/main/README.md")
 parser.add_argument('-m', dest="meth", action='store', default="dnsrec", help="specifying the method you wanna use. e.g. ddns update, check id only, etc.", choices=["dnsrec", "nameonly", "ddns", "id"])
-parser.add_argument("--zone", dest="zone", action="store", help="input zone id", metavar="Zone ID")
-parser.add_argument("--token", dest="token", action="store", help="input token", metavar="Token")
-parser.add_argument("-s", dest="subdomain", action="store", default="", help="input subdomain", metavar="Subdomain")
-parser.add_argument("--type", dest="type", action="store", default="", help="type of record (A/AAAA)", metavar="Record TYPE")
+parser.add_argument("-z", "--zone", dest="zone", action="store", help="input zone id", metavar="Zone ID")
+parser.add_argument("-k", "--token", dest="token", action="store", help="input token", metavar="Token")
+parser.add_argument("-s", "--subdomain",dest="subdomain", action="store", default="", help="input subdomain", metavar="Subdomain")
+parser.add_argument("-t", "--type", dest="type", action="store", default="", help="type of record (A/AAAA)", metavar="Record TYPE")
 parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="verbose mode")
 parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", help="disable CF's proxy while creating record")
 parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int, choices=range(1,7))
@@ -122,12 +122,15 @@ def checkExist():
 
 def fetchID():
     fetchDomainName()
-    subdomain1 = ".".join([subdomain, domain])
-    namequerydata = {"name": subdomain1}
-    if type != "":
-        namequerydata['type'] = type
+    if subdomain is None or subdomain == "":
+        subdomain1 = domain
     else:
+        subdomain1 = ".".join([subdomain, domain])
+    namequerydata = {"name": subdomain1}
+    if type == "" or type is None:
         namequerydata['type'] = "A"
+    else:
+        namequerydata['type'] = type
     try:
         http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", headers=option, params=namequerydata) #calling CloudFlare API
     except:
@@ -136,7 +139,20 @@ def fetchID():
         return(http.json()['result'][0]['id'])
 
 def IDonly():
-    print(fetchID())
+        fetchDomainName()
+        if subdomain is None or subdomain == "":
+            subdomain1 = domain
+        else:
+            subdomain1 = ".".join([subdomain, domain])
+        namequerydata = {"name": subdomain1}
+        namequerydata['type'] = type
+        try:
+            http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", headers=option, params=namequerydata) #calling CloudFlare API
+        except:
+            print("Errors occurred!")
+        else:
+            for item in http.json()["result"]:
+                print(item["type"] + ": " + item["id"])
 
 def debug():
     print(checkExist())
