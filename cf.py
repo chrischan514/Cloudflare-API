@@ -31,11 +31,11 @@ if zone=="":
 if token=="":
     token = input("Token:")
 
-option = {"Content-Type": "application/json", "Authorization": "Bearer "+token} #HTTP Headers required in CloudFlare API
+option = {"Content-Type": "application/json", "Authorization": "Bearer "+str(token)} #HTTP Headers required in CloudFlare API
 
 def fetchDomainName():
     try:
-        domainquery = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone, headers=option)
+        domainquery = requests.get("https://api.cloudflare.com/client/v4/zones/" + str(zone), headers=option)
     except:
         print("Errors occurred!")
     else:
