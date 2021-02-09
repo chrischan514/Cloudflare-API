@@ -1,4 +1,4 @@
-#Quick Tools using CloudFlare's API
+# Quick Tools using CloudFlare's API
 
 # Immediate Use
 macOS only: If you do not need a separate file to contain all your frequently used (token and zone id), instead you will enter each time on your own, you can just download the "start.command" and run.
