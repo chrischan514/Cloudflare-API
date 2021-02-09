@@ -6,7 +6,7 @@ macOS only: If you do not need a separate file to contain all your frequently us
 I'm using macOS, dunno about Windows.  
 Python is needed.
 ## Tested Setup
-macOS 11.0.1 (20B29), Python 3.9.0
+macOS 11.2 (20D64), Python 3.9.0
 ## Modules Required
 - `requests`
 
