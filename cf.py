@@ -28,17 +28,35 @@ type = ""
 subdomain = ""
 idtype=type
 
+def checkInternetConnection():
+    try:
+    	request = requests.get("https://www.google.com/", timeout=5)
+    except (requests.ConnectionError, requests.Timeout) as exception:
+    	raise Exception("No internet connection.")
+
 def checkUpdate():
-    if json.load(open(metadata_loc))["version"] != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json").json()["version"]:
+    print("Verifying updates...")
+    if json.load(open(metadata_loc))["version"] != .json()["version"]:
         print("Update available")
         try:
             print("Trying to update the script automatically...")
-            open(path + '/cf.py', "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/cf.py").text)
+            open(path + '/cf.py', "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/cf.py",headers={'Cache-Control': 'no-cache'}).text)
         except:
             print("Unable to update the script automatically")
         else:
-            open(metadata_loc, "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json").text)
+            import platform
+            open(metadata_loc, "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json",headers={'Cache-Control': 'no-cache'}).text)
             print("Updated Successfully\n")
+            if platform.system() == "Windows":
+                "Automatically restarting the scipt is currenly not supported on Windows, please launch the script again manually"
+            else:
+                try:
+                    print("Restarting the script...")
+                except:
+                    print("Unable to restart the script, please restart manually")
+                else:
+                    import sys
+                    os.execl(sys.executable, *([sys.executable]+sys.argv))
 
 if os.path.exists(metadata_loc):
     checkUpdate()
@@ -284,6 +302,8 @@ def IDonly():
 
 methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
 start = methods[args.meth]
+
+checkInternetConnection()
 
 if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
