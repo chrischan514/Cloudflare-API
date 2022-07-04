@@ -188,9 +188,8 @@ def ddns():
                 return True
 
         if checkIPCache(type, ip) == True:
-            idtype = type
             updateparam = json.dumps({"type": type, "name": subdomain, "content": ip, "ttl": 1})
-            if checkExist() is True:
+            if dnsDetail() is True:
                 try:
                     if args.verbose is True:
                         print("Trying to update record")
@@ -220,20 +219,13 @@ def ddns():
                     if args.verbose is True:
                         print(update.text)
 
-    if type == "A":
+    if type == "A" or type == "AAAA":
         ddnsCore(type, subdomain1)
-    elif type == "AAAA":
-        ddnsCore(type, subdomain)
     elif type=="" or type.lower()=="both":
         ddnsCore("A", subdomain)
         ddnsCore("AAAA", subdomain)
     else:
         raise ValueError
-
-def checkExist():
-    if args.debug is True:
-        print(dnsDetail())
-    return dnsDetail()
 
 def fetchID():
     fetchDomainName()
@@ -246,13 +238,11 @@ def fetchID():
             namequerydata['type'] = type
     else:
         namequerydata['type'] = idtype
-    print(namequerydata['type'])
     try:
         http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", headers=option, params=namequerydata) #calling CloudFlare API
     except:
         print("Errors occurred! Unable to get DNS record ID")
     else:
-        print(http.headers)
         return(http.json()['result'][0]['id'])
 
 def IDonly():
