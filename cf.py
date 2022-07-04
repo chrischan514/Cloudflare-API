@@ -23,6 +23,11 @@ zone = ""
 token = ""
 type = ""
 subdomain = ""
+idtype=type
+
+if args.meth != "dnsrec" and args.meth != "nameonly" and args.meth != "ddns" and args.meth != "id":
+    raise ValueError("Unknown selected method")
+
 if os.path.exists(config_loc): #import custom config
     import config
     if args.debug is True:
@@ -89,84 +94,132 @@ def defSubdomain():
     else:
         subdomain1=""
 
-def dnsDetailCore(subdomain, type):
-    namequerydata = {"name": subdomain}
-    namequerydata['type'] = type
-    if args.debug is True:
-        print(namequerydata)
-        print("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records")
-        print(namequerydata)
-        print(option)
-    try:
-        http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", params=namequerydata, headers=option) #calling CloudFlare API
-    except:
-        print("Errors occurred!")
-    else:
-        return(http.json())
-
 def dnsDetail():
     fetchDomainName()
     defSubdomain()
     if args.debug is True:
-        print(type)
+        print(idtype)
+    def dnsDetailCore(subdomain, type):
+        namequerydata = {"name": subdomain}
+        namequerydata['type'] = idtype
+        if args.debug is True:
+            print(namequerydata)
+            print("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records")
+            print(namequerydata)
+            print(option)
+        try:
+            http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", params=namequerydata, headers=option) #calling CloudFlare API
+        except:
+            print("Errors occurred!")
+        else:
+            return(http.json())
     if type is not None and type != "":
         if args.debug is True:
             print(type)
-        print(dnsDetailCore(subdomain1, type))
+        if args.meth == "dnsrec":
+            print(dnsDetailCore(subdomain1, type))
     else:
         if args.debug is True:
             print(type)
-        print(dnsDetailCore(subdomain1, "A"))
-        print(dnsDetailCore(subdomain1, "AAAA"))
+        if args.meth == "dnsrec":
+            dnsDetailCore(subdomain1, "A")
+            dnsDetailCore(subdomain1, "AAAA")
+    if dnsDetailCore(subdomain1, "A")['result_info']['count']==0 and dnsDetailCore(subdomain1, "AAAA")['result_info']['count']==0:
+        return False
+    else:
+        return True
 
 def dnsrec():
-    print(dnsDetail())
+    dnsDetail()
 
 def showDomainName():
     print(fetchDomainName())
 
-def ddnsCore(type, subdomain):
-    if type == "AAAA":
-        site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv6"]
-        conntype = "IPv6"
-    elif type == "A":
-        site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv4"]
-        conntype = "IPv4"
-    else:
-        raise ValueError
-    try:
-        http = requests.get(site)
-    except ConnectionError:
-        print(conntype + " connection was not able to establish")
-    else:
-        ip = http.text
-    updateparam = json.dumps({"type": type, "name": subdomain, "content": ip, "ttl": 1})
-    if checkExist() is True:
-        try:
-            update = requests.put("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/" + fetchID(), headers=option, data=updateparam) #calling CloudFlare API
-        except:
-            print("Errors occurred!")
-        else:
-            if args.verbose is True or args.debug is True:
-                print(update.text)
-    else:
-        if args.proxystatus is not False:
-            updateparam=json.loads(updateparam)
-            updateparam["proxied"] = True
-            updateparam = json.dumps(updateparam)
-        try:
-            update = requests.post("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/", headers=option, data=updateparam) #calling CloudFlare API
-        except:
-            print("Errors occurred!")
-        else:
-            if args.verbose is True:
-                print(update.text)
-
 def ddns():
     import json
     fetchDomainName()
-    global type
     defSubdomain()
+    def ddnsCore(type, subdomain):
+        global idtype
+        idtype = type
+        if type == "AAAA":
+            site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv6"]
+            conntype = "IPv6"
+        elif type == "A":
+            site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv4"]
+            conntype = "IPv4"
+        else:
+            raise ValueError
+        try:
+            http = requests.get(site)
+        except ConnectionError:
+            print(conntype + " connection was not able to establish")
+        else:
+            ip = http.text
+
+        def checkIPCache(type,ip):
+            iplist = ["",""]
+            if args.debug is True:
+                print(ip)
+
+            if os.path.exists(path + '/ipcache.txt') and len(open(path + '/ipcache.txt', "r").readlines())>0:
+                iplist = [open(path + '/ipcache.txt', "r").read().splitlines()[0],open(path + '/ipcache.txt', "r").read().splitlines()[-1]]
+
+            if type == "A":
+                cacheip = iplist[0]
+            elif type == "AAAA":
+                cacheip = iplist[1]
+
+            def updateIPCache():
+                nonlocal iplist
+                if type == "A" or type == "AAAA":
+                    if args.debug is True:
+                        print(iplist)
+                    if type == "A":
+                        iplist[0]=ip
+                    elif type == "AAAA":
+                        iplist[1]=ip
+                    open(path + '/ipcache.txt', 'w').writelines(iplist[0]+"\n"+iplist[1])
+
+            if os.path.exists(path + '/ipcache.txt') and cacheip == ip:
+                return False
+            else:
+                updateIPCache()
+                return True
+
+        if checkIPCache(type, ip) == True:
+            idtype = type
+            updateparam = json.dumps({"type": type, "name": subdomain, "content": ip, "ttl": 1})
+            if checkExist() is True:
+                try:
+                    if args.verbose is True:
+                        print("Trying to update record")
+                    update = requests.put("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/" + fetchID(), headers=option, data=updateparam) #calling CloudFlare API
+                except:
+                    print("Errors occurred! Unable to update record")
+                    if os.path.exists(path + '/ipcache.txt'):
+                        os.remove(path + '/ipcache.txt')
+                else:
+                    if args.verbose is True or args.debug is True:
+                        print(update.text)
+            else:
+                if args.proxystatus is not False:
+                    updateparam=json.loads(updateparam)
+                    updateparam["proxied"] = True
+                    updateparam = json.dumps(updateparam)
+                try:
+                    if args.verbose is True:
+                        print("Trying to create record")
+                    update = requests.post("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records/", headers=option, data=updateparam) #calling CloudFlare API
+
+                except:
+                    print("Errors occurred! Unable to create record")
+                    if os.path.exists(path + '/ipcache.txt'):
+                        os.remove(path + '/ipcache.txt')
+                else:
+                    if args.verbose is True:
+                        print(update.text)
+
     if type == "A":
         ddnsCore(type, subdomain1)
     elif type == "AAAA":
@@ -178,27 +231,28 @@ def ddns():
         raise ValueError
 
 def checkExist():
-    if dnsDetail()['result_info']['count']==0:
-        return False
-    else:
-        return True
+    if args.debug is True:
+        print(dnsDetail())
+    return dnsDetail()
 
 def fetchID():
     fetchDomainName()
-    if subdomain is None or subdomain == "":
-        subdomain1 = domain
-    else:
-        subdomain1 = ".".join([subdomain, domain])
+    defSubdomain()
     namequerydata = {"name": subdomain1}
-    if type == "" or type is None:
-        namequerydata['type'] = "A"
+    if idtype == "" or idtype is None:
+        if type == "" or type is None:
+            namequerydata['type'] = "A"
+        else:
+            namequerydata['type'] = type
     else:
-        namequerydata['type'] = type
+        namequerydata['type'] = idtype
+    print(namequerydata['type'])
     try:
         http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", headers=option, params=namequerydata) #calling CloudFlare API
     except:
-        print("Errors occurred!")
+        print("Errors occurred! Unable to get DNS record ID")
     else:
+        print(http.headers)
         return(http.json()['result'][0]['id'])
 
 def IDonly():
@@ -217,16 +271,10 @@ def IDonly():
             for item in http.json()["result"]:
                 print(item["type"] + ": " + item["id"])
 
-def debug():
-    print(checkExist())
-
-methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly, "debug": debug}
+methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
 start = methods[args.meth]
+
 if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
-    print(config_loc)
-    print(zone)
-    print(token)
-    print(type)
-    print(subdomain)
+
 start()
