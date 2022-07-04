@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 
-
 # custom value should be defined in config.py
 import requests
 import os.path
@@ -12,16 +11,52 @@ parser.add_argument('-m', dest="meth", action='store', default="dnsrec", help="s
 parser.add_argument("-z", "--zone", dest="zone", action="store", help="input zone id", metavar="Zone ID")
 parser.add_argument("-k", "--token", dest="token", action="store", help="input token", metavar="Token")
 parser.add_argument("-s", "--subdomain",dest="subdomain", action="store", default="", help="input subdomain", metavar="Subdomain")
-parser.add_argument("-t", "--type", dest="type", action="store", default="", help="type of record (A/AAAA)", metavar="Record TYPE")
+parser.add_argument("-t", "--type", dest="type", action="store", default="", help="type of record (A/AAAA/both)", metavar="Record TYPE")
 parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="verbose mode")
+parser.add_argument("-D", "--debug", dest="debug", action="store_true")
 parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", help="disable CF's proxy while creating record")
 parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int, choices=range(1,7))
 args = parser.parse_args()
+path = os.path.dirname(os.path.realpath(__file__))
+config_loc = path + '/config.py'
+zone = ""
+token = ""
+type = ""
+subdomain = ""
+if os.path.exists(config_loc): #import custom config
+    import config
+    if args.debug is True:
+        print("Found")
+        print(config.zone)
+        print(config.token)
+    if hasattr(config, 'zone'):
+        zone = config.zone
+    if hasattr(config, 'token'):
+        token = config.token
+    if hasattr(config, 'type'):
+        type = config.type
+    if hasattr(config, 'subdomain'):
+        subdomain = config.subdomain
 
-if os.path.isfile(str(pathlib.Path(__file__).parent) + '/config.py'): #import custom config
-    from config import *
+if args.zone != "" and args.zone is not None:
+    zone = args.zone
 
-zone, token, type, subdomain = args.zone, args.token, args.type, args.subdomain
+if args.token != "" and args.token is not None:
+    token = args.token
+
+if args.type != "" and args.type is not None:
+    type = args.type
+
+if args.subdomain != "" and args.subdomain is not None:
+    subdomain = args.subdomain
+
+if args.debug is True:
+    print(os.path.dirname(os.path.realpath(__file__)))
+    print(config_loc)
+    print(zone)
+    print(token)
+    print(type)
+    print(subdomain)
 
 if zone=="" or zone is None:
     zone = input("Zone ID: ")
@@ -41,19 +76,27 @@ def fetchDomainName():
         domain = domainquery.json()["result"]["name"]
         return domain
 
-def dnsDetail():
-    fetchDomainName()
-    if args.subdomain=="":
+def defSubdomain():
+    global subdomain
+    global subdomain1
+    if subdomain=="" or subdomain is None:
         subdomain = input('Subdomain which you wanna check (Blank if all): ')
-    else:
-        subdomain = args.subdomain
     if subdomain != "":
-        subdomain1 = ".".join([subdomain, domain])
+        if subdomain == "@":
+            subdomain1 = domain
+        else:
+            subdomain1 = ".".join([subdomain, domain])
     else:
         subdomain1=""
-    namequerydata = {"name": subdomain1}
-    if type != "":
-        namequerydata['type'] = type
+
+def dnsDetailCore(subdomain, type):
+    namequerydata = {"name": subdomain}
+    namequerydata['type'] = type
+    if args.debug is True:
+        print(namequerydata)
+        print("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records")
+        print(namequerydata)
+        print(option)
     try:
         http = requests.get("https://api.cloudflare.com/client/v4/zones/" + zone + "/dns_records", params=namequerydata, headers=option) #calling CloudFlare API
     except:
@@ -61,34 +104,40 @@ def dnsDetail():
     else:
         return(http.json())
 
+def dnsDetail():
+    fetchDomainName()
+    defSubdomain()
+    if args.debug is True:
+        print(type)
+    if type is not None and type != "":
+        if args.debug is True:
+            print(type)
+        print(dnsDetailCore(subdomain1, type))
+    else:
+        if args.debug is True:
+            print(type)
+        print(dnsDetailCore(subdomain1, "A"))
+        print(dnsDetailCore(subdomain1, "AAAA"))
+
 def dnsrec():
     print(dnsDetail())
 
 def showDomainName():
     print(fetchDomainName())
 
-def ddns():
-    import json
-    fetchDomainName()
-    global type
-    ipv6, ipv4 = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv6"], requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv4"]
-    if type == "A":
-        site = ipv4
-    elif type == "AAAA":
-        site = ipv6
-    elif type=="":
-        site, type = ipv4, "A"
+def ddnsCore(type, subdomain):
+    if type == "AAAA":
+        site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv6"]
+        conntype = "IPv6"
+    elif type == "A":
+        site = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/provider.json").json()["set"][args.provider-1]["ipv4"]
+        conntype = "IPv4"
     else:
         raise ValueError
-    if subdomain =="":
-        subdomain1 = input("Subdomain you wanna update: ")
-    else:
-        subdomain1 = args.subdomain
-    subdomain1 = ".".join([subdomain, domain])
     try:
         http = requests.get(site)
     except ConnectionError:
-        print("Error! Probably this connection type is not supported in your network, or the query sites have been blocked!")
+        print(conntype + " connection was not able to establish")
     else:
         ip = http.text
     updateparam = json.dumps({"type": type, "name": subdomain, "content": ip, "ttl": 1})
@@ -98,7 +147,7 @@ def ddns():
         except:
             print("Errors occurred!")
         else:
-            if args.verbose is True:
+            if args.verbose is True or args.debug is True:
                 print(update.text)
     else:
         if args.proxystatus is not False:
@@ -112,6 +161,21 @@ def ddns():
         else:
             if args.verbose is True:
                 print(update.text)
+
+def ddns():
+    import json
+    fetchDomainName()
+    global type
+    defSubdomain()
+    if type == "A":
+        ddnsCore(type, subdomain1)
+    elif type == "AAAA":
+        ddnsCore(type, subdomain)
+    elif type=="" or type.lower()=="both":
+        ddnsCore("A", subdomain)
+        ddnsCore("AAAA", subdomain)
+    else:
+        raise ValueError
 
 def checkExist():
     if dnsDetail()['result_info']['count']==0:
@@ -158,4 +222,11 @@ def debug():
 
 methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly, "debug": debug}
 start = methods[args.meth]
+if args.debug is True:
+    print(os.path.dirname(os.path.realpath(__file__)))
+    print(config_loc)
+    print(zone)
+    print(token)
+    print(type)
+    print(subdomain)
 start()

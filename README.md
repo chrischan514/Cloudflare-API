@@ -43,7 +43,7 @@ optional arguments:
   -s Subdomain, --subdomain Subdomain
                         input subdomain
   -t Record TYPE, --type Record TYPE
-                        type of record (A/AAAA)
+                        type of record (A/AAAA/both)
   -v, --verbose         verbose mode
   --without-proxy       disable CF's proxy while creating record
   --provider {1,2,3,4,5,6}
@@ -57,6 +57,19 @@ dnsrec    list json response from CF
 nameonly  return domain name only
 ddns      update record as ddns
 id        show record ID (first record)
+```
+
+For ddns, if record type is not specified, then the default will be updating both IPv4 and IPv6 record (if available).
+
+## Configuraton File
+This script can access to a preset of parameters in order to reduce the manual input while using the script. 
+The configuration file should be named ```config.py```, can be created by ```cp config_sample.py config.py``` on UNIX systems.
+The configuration file looks like this, all the parameters are optional to define in the file.
+```
+zone = "" #Zone ID
+token = "" #API Token (requires DNS modification permission)
+subdomain = "" #Subdomain preset for updating (without the domain name, only the subdomain part)
+type = "" #Subdomain preset for updating (without the domain name, only the subdomain part)
 ```
 
 ## Provider Sets
