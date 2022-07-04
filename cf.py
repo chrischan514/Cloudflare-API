@@ -257,6 +257,8 @@ def ddns():
                 else:
                     if args.verbose is True:
                         print(update.text)
+        else:
+            print("IP address remain unchanged, no action needed")
 
     if type == "A" or type == "AAAA":
         ddnsCore(type, subdomain1)
