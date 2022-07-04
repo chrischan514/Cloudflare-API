@@ -6,6 +6,8 @@ import requests
 import os.path
 import pathlib
 import argparse
+import json
+
 parser = argparse.ArgumentParser(description="Asking CloudFlare's API to help you. For more details, please check https://github.com/chrischan514/Cloudflare-API/blob/main/README.md")
 parser.add_argument('-m', dest="meth", action='store', default="dnsrec", help="specifying the method you wanna use. e.g. ddns update, check id only, etc.", choices=["dnsrec", "nameonly", "ddns", "id"])
 parser.add_argument("-z", "--zone", dest="zone", action="store", help="input zone id", metavar="Zone ID")
@@ -19,11 +21,30 @@ parser.add_argument("--provider", dest="provider", action="store", help="try cho
 args = parser.parse_args()
 path = os.path.dirname(os.path.realpath(__file__))
 config_loc = path + '/config.py'
+metadata_loc = path + '/metadata.json'
 zone = ""
 token = ""
 type = ""
 subdomain = ""
 idtype=type
+
+def checkUpdate():
+    if json.load(open(metadata_loc))["version"] != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json").json()["version"]:
+        print("Update available")
+        try:
+            print("Trying to update the script automatically...")
+            open(path + '/cf.py', "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/cf.py").text)
+        except:
+            print("Unable to update the script automatically")
+        else:
+            open(metadata_loc, "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json").text)
+            print("Updated Successfully\n")
+
+if os.path.exists(metadata_loc):
+    checkUpdate()
+else:
+    json.dump({"version": "unknown"},open(metadata_loc, "w"))
+    checkUpdate()
 
 if args.meth != "dnsrec" and args.meth != "nameonly" and args.meth != "ddns" and args.meth != "id":
     raise ValueError("Unknown selected method")
@@ -31,7 +52,7 @@ if args.meth != "dnsrec" and args.meth != "nameonly" and args.meth != "ddns" and
 if os.path.exists(config_loc): #import custom config
     import config
     if args.debug is True:
-        print("Found")
+        print("Found configuration file")
         print(config.zone)
         print(config.token)
     if hasattr(config, 'zone'):
@@ -85,7 +106,7 @@ def defSubdomain():
     global subdomain
     global subdomain1
     if subdomain=="" or subdomain is None:
-        subdomain = input('Subdomain which you wanna check (Blank if all): ')
+        subdomain = input('Subdomain which you wanna check (Blank if all, @ for root domain): ')
     if subdomain != "":
         if subdomain == "@":
             subdomain1 = domain

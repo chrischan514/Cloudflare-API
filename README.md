@@ -17,6 +17,11 @@ pip3 install requests
 ## FreeNAS/ TrueNAS environment
 FreeNAS/ TrueNAS host's python has already installed `request` module, no extra steps have to be done. Can be executed in host cron job as ddns service.
 
+Clone the repository in order to use.
+```
+git clone https://github.com/chrischan514/Cloudflare-API
+```
+
 # Features
 ## DDNS
 No record ID input is needed, the ID will be automatically fetched for you.  
@@ -62,7 +67,7 @@ id        show record ID (first record)
 For ddns, if record type is not specified, then the default will be updating both IPv4 and IPv6 record (if available).
 
 ## Configuraton File
-This script can access to a preset of parameters in order to reduce the manual input while using the script. 
+This script can access to a preset of parameters in order to reduce the manual input while using the script.
 The configuration file should be named ```config.py```, can be created by ```cp config_sample.py config.py``` on UNIX systems.
 The configuration file looks like this, all the parameters are optional to define in the file.
 ```
