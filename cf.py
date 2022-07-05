@@ -37,7 +37,7 @@ else:
 
 metadata = {
     "version": "1.0.0",
-    "buildnum": "2022070501"
+    "buildnum": "2022070502"
 }
 
 def checkInternetConnection():
