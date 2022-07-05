@@ -6,5 +6,5 @@ config.py
 __pycache__/
 
 ipcache.txt
-genmetadata.command
-genmetadata.py
+genfiles.command
+genfiles.py

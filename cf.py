@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import hashlib
 
 # custom value should be defined in config.py
 import requests
@@ -307,7 +308,7 @@ def IDonly():
                 print(item["type"] + ": " + item["id"])
 
 def printVersion():
-    print("Installted Version: "+metadata["version"]+" (Build Number: "+metadata["buildnum"]+")\nFor more detailed information please check out on the github repo page\n\nhttps://github.com/chrischan514/Cloudflare-API/blob/main/cf.py")
+    print("Installed Version: "+metadata["version"]+" (Build Number: "+metadata["buildnum"]+")\nFor more detailed information please check out on the github repo page\n\nhttps://github.com/chrischan514/Cloudflare-API/blob/main/cf.py")
 
 methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
 start = methods[args.meth]
@@ -317,6 +318,10 @@ start = methods[args.meth]
 if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
 if scriptmode == False:
+    if hashlib.sha256(open(path + '/cf.py', "rb").read()).hexdigest() != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/sha256",headers={'Cache-Control': 'no-cache'}):
+        print("Failed integrity check, a new copy will be downloaded")
+        metadata["buildnum"] = "0"
+        checkUpdate()
     checkInternetConnection()
     if args.disableautoupdate is False:
             checkUpdate()
