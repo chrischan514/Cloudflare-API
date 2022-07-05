@@ -318,7 +318,7 @@ start = methods[args.meth]
 if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
 if scriptmode == False:
-    if hashlib.sha256(open(path + '/cf.py', "rb").read()).hexdigest() != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/sha256.json",headers={'Cache-Control': 'no-cache'}).json()[buildnum]:
+    if hashlib.sha256(open(path + '/cf.py', "rb").read()).hexdigest() != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/sha256.json",headers={'Cache-Control': 'no-cache'}).json()[metadata["buildnum"]]:
         print("Failed integrity check, a new copy will be downloaded")
         metadata["buildnum"] = "0"
         checkUpdate()
