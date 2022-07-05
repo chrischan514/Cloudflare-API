@@ -308,7 +308,7 @@ def IDonly():
                 print(item["type"] + ": " + item["id"])
 
 def printVersion():
-    print("Installed Version: "+metadata["version"]+" (Build Number: "+metadata["buildnum"]+")\nFor more detailed information please check out on the github repo page\n\nhttps://github.com/chrischan514/Cloudflare-API/blob/main/cf.py")
+    print("Installed Version: "+metadata["version"]+" (Build Number: "+metadata["buildnum"]+")\nFor more detailed information please check out on the github repo page\n\nhttps://github.com/chrischan514/Cloudflare-API/")
 
 methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
 start = methods[args.meth]
