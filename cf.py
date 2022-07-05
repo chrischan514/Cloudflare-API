@@ -47,7 +47,7 @@ def checkInternetConnection():
 
 def checkUpdate():
     print("Verifying updates...")
-    if metadata["buildnum"] != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.py",headers={'Cache-Control': 'no-cache'}).json()["buildnum"]:
+    if metadata["buildnum"] != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json",headers={'Cache-Control': 'no-cache'}).json()["buildnum"]:
         print("Update available")
         try:
             print("Trying to update the script automatically...")
