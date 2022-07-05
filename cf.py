@@ -319,15 +319,16 @@ if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
 if scriptmode == False:
     try:
-        hashlib.sha256(open(path + '/cf.py', "rb").read()).hexdigest() != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/sha256.json",headers={'Cache-Control': 'no-cache'}).json()[metadata["buildnum"]]
+        orgsha256 = requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/sha256.json",headers={'Cache-Control': 'no-cache'}).json()[metadata["buildnum"]]
     except:
         print("Unable to perform integrity check, a new copy will be downloaded")
         metadata["buildnum"] = "0"
         checkUpdate()
     else:
-        print("Failed integrity check, a new copy will be downloaded")
-        metadata["buildnum"] = "0"
-        checkUpdate()
+        if hashlib.sha256(open(path + '/cf.py', "rb").read()).hexdigest() != orgsha256:
+            print("Failed integrity check, a new copy will be downloaded")
+            metadata["buildnum"] = "0"
+            checkUpdate()
     checkInternetConnection()
     if args.disableautoupdate is False:
             checkUpdate()
