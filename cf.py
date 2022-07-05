@@ -15,18 +15,29 @@ parser.add_argument("-k", "--token", dest="token", action="store", help="input t
 parser.add_argument("-s", "--subdomain",dest="subdomain", action="store", default="", help="input subdomain", metavar="Subdomain")
 parser.add_argument("-t", "--type", dest="type", action="store", default="", help="type of record (A/AAAA/both)", metavar="Record TYPE")
 parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="verbose mode")
+parser.add_argument("--disable-auto-update", dest="disableautoupdate", action="store_true", help="disable the automatic update feature")
 parser.add_argument("-D", "--debug", dest="debug", action="store_true")
 parser.add_argument("--without-proxy", dest="proxystatus",action="store_false", help="disable CF's proxy while creating record")
 parser.add_argument("--provider", dest="provider", action="store", help="try choosing another provider set if it fails", default=2, type=int, choices=range(1,7))
+parser.add_argument("-V","--version", dest="printversion",action="store_true", help="version detail")
 args = parser.parse_args()
 path = os.path.dirname(os.path.realpath(__file__))
 config_loc = path + '/config.py'
-metadata_loc = path + '/metadata.json'
 zone = ""
 token = ""
 type = ""
 subdomain = ""
 idtype=type
+
+if os.path.exists(path+"/scriptmode"):
+    scriptmode=True
+else:
+    scriptmode = False
+
+metadata = {
+    "version": "1.0.0",
+    "buildnum": "2022070500"
+}
 
 def checkInternetConnection():
     try:
@@ -36,7 +47,7 @@ def checkInternetConnection():
 
 def checkUpdate():
     print("Verifying updates...")
-    if json.load(open(metadata_loc))["version"] != .json()["version"]:
+    if metadata["buildnum"] != requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.py",headers={'Cache-Control': 'no-cache'}).json()["buildnum"]:
         print("Update available")
         try:
             print("Trying to update the script automatically...")
@@ -45,7 +56,6 @@ def checkUpdate():
             print("Unable to update the script automatically")
         else:
             import platform
-            open(metadata_loc, "w").write(requests.get("https://raw.githubusercontent.com/chrischan514/Cloudflare-API/main/metadata.json",headers={'Cache-Control': 'no-cache'}).text)
             print("Updated Successfully\n")
             if platform.system() == "Windows":
                 "Automatically restarting the scipt is currenly not supported on Windows, please launch the script again manually"
@@ -57,12 +67,6 @@ def checkUpdate():
                 else:
                     import sys
                     os.execl(sys.executable, *([sys.executable]+sys.argv))
-
-if os.path.exists(metadata_loc):
-    checkUpdate()
-else:
-    json.dump({"version": "unknown"},open(metadata_loc, "w"))
-    checkUpdate()
 
 if args.meth != "dnsrec" and args.meth != "nameonly" and args.meth != "ddns" and args.meth != "id":
     raise ValueError("Unknown selected method")
@@ -302,12 +306,21 @@ def IDonly():
             for item in http.json()["result"]:
                 print(item["type"] + ": " + item["id"])
 
+def printVersion():
+    print("Installted Version: "+metadata["version"]+" (Build Number: "+metadata["buildnum"]+")\nFor more detailed information please check out on the github repo page\n\nhttps://github.com/chrischan514/Cloudflare-API/blob/main/cf.py")
+
 methods = {"dnsrec": dnsrec, "nameonly": showDomainName, "ddns": ddns, "id": IDonly}
 start = methods[args.meth]
 
-checkInternetConnection()
+
 
 if args.debug is True:
     print(os.path.dirname(os.path.realpath(__file__)))
-
-start()
+if scriptmode == False:
+    checkInternetConnection()
+    if args.disableautoupdate is False:
+            checkUpdate()
+    if args.printversion is True:
+        printVersion()
+    else:
+        start()
